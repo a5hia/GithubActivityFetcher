@@ -1,10 +1,10 @@
-# GithubUserActivityFetcher
+# GithubActivityFetcher
 This is a simple program to fetch a users Github activity via Githubs API. This was built for a [roadmap.sh](https://roadmap.sh/projects/github-user-activity) project
 ## Installing & Running
 ### Install
 Clone the repository and cd into it.
 ```bash
-git clone https://github.com/a5hia/GithubUserActivityFetcher.git
+git clone https://github.com/a5hia/GithubActivityFetcher.git
 ```
 ### Running
 Simply open the index.js file via node passing the desired username. 
