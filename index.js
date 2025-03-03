@@ -8,7 +8,7 @@ const reset = "\x1b[0m";
 // Function to ask GithubAPI for user activity
 async function FetchActivity(username) {
     console.log(
-        `${blue}Fetching user activity for user${green} ${username}${reset}`,
+        `${blue}Fetching user activity for user${green + username + reset}`,
     );
     const response = await fetch(
         `https://api.github.com/users/${username}/events`,
@@ -18,9 +18,7 @@ async function FetchActivity(username) {
             case 404:
                 throw new Error(`${red}Error: 404.${reset} User is not found.`); // Could be from ratelimit rarely.
             case 403:
-                throw new Error(
-                    `${red}Error: 403.${reset} Permission denied. Possible rate limit.`,
-                );
+                throw new Error(`${red}Error: 403.${reset} Permission denied. Possible rate limit.`);
             case 503:
                 throw new Error(`${red}Error: 503.${reset} GithubAPI is down.`); // Could also be server issue
             case 504:
@@ -36,7 +34,7 @@ async function FetchActivity(username) {
 function PrintActivity(response) {
     if (response.length == 0) {
         // Special case so it doesn't return blank
-        console.log("${red}Error:${reset} No recent activity found.");
+        console.log(`${red}Error:${reset} No recent activity found.`);
         return;
     }
 
@@ -47,48 +45,48 @@ function PrintActivity(response) {
         switch (event.type) {
             case "CreateEvent":
                 if (event.payload.ref_type == "branch") {
-                    eventInfo = `${red + username + reset} created a ${event.payload.ref_type} in ${event.repo.name};`;
+                    eventInfo = `${green + username + reset} created a branch in ${event.repo.name}`;
                 } else {
-                    eventInfo = `${red + username + reset} created a ${event.payload.ref_type} called ${event.repo.name}`;
+                    eventInfo = `${green + username + reset} created a ${event.payload.ref_type} called ${event.repo.name}`; // idk if there is another value idk about so keeping like this
                 }
                 break;
             case "DeleteEvent":
                 if (event.payload.ref_type == "branch") {
-                    eventInfo = `${red + username + reset} deleted a ${event.payload.ref_type} in ${event.repo.name}`;
+                    eventInfo = `${green + username + reset} deleted a branch in ${event.repo.name}`;
                 } else {
-                    eventInfo = `${red + username + reset} deleted a ${event.payload.ref_type} called ${event.repo.name}`;
+                    eventInfo = `${green + username + reset} deleted a ${event.payload.ref_type} called ${event.repo.name}`;
                 }
                 break;
             case "ForkEvent":
-                eventInfo = `$${red + username + reset} forked ${event.repo.name}`;
+                eventInfo = `${green + username + reset} forked ${event.repo.name}`;
                 break;
             case "MemberEvent":
-                eventInfo = `$${red + username + reset} added ${event.payload.member.login} to ${event.repo.name}`;
+                eventInfo = `${green + username + reset} added ${event.payload.member.login} to ${event.repo.name}`;
                 break;
             case "PublicEvent":
-                eventInfo = `${red + username + reset} made ${event.repo.name} public`;
+                eventInfo = `${green + username + reset} made ${event.repo.name} public`;
                 break;
             case "PullRequestEvent":
-                eventInfo = `${red + username + reset} opened a pull request in ${event.repo.name}`;
+                eventInfo = `${green + username + reset} opened a pull request in ${event.repo.name}`;
                 break;
             case "PushEvent":
-                eventInfo = `${red + username + reset} pushed changes to ${event.repo.name}`;
+                eventInfo = `${green + username + reset} pushed changes to ${event.repo.name}`;
                 break;
             case "ReleseEvent":
-                eventInfo = `${red + username + reset} released ${event.payload.release.tag_name} in ${event.repo.name}`;
+                eventInfo = `${green + username + reset} released ${event.payload.release.tag_name} in ${event.repo.name}`;
                 break;
             case "WatchEvent":
-                eventInfo = `${red + username + reset} starred ${event.repo.name}`;
+                eventInfo = `${green + username + reset} starred ${event.repo.name}`;
                 break;
             default:
-                eventInfo = `${red + username + reset} had a ${event.type} in ${event.repo.name}`;
+                eventInfo = `${green + username + reset} had a ${event.type} in ${event.repo.name}`;
                 break;
         }
         console.log(
-            `${yellow}- Event at ${reset}${event.created_at.substring(0, 10)} ${event.created_at.substring(12, 19)} ${yellow}UTC -${reset}\n${eventInfo}`,
+            `\n${yellow}Event at ${reset}${event.created_at.substring(0, 10)} ${event.created_at.substring(12, 19)} ${yellow}UTC:${reset}\n${eventInfo}`,
         ); // Premade event script
     });
-}
+};
 
 const username = process.argv[2]; // Returns username provided in initial command
 if (!username) {
@@ -103,4 +101,4 @@ if (!username) {
             console.error(err.message);
             process.exit(1);
         });
-}
+};
