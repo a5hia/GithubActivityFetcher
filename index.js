@@ -1,48 +1,98 @@
+// Console Color Escape Codes
+const red = "\x1b[31m";
+const green = "\x1b[32m";
+const yellow = "\x1b[33m";
+const blue = "\x1b[34m";
+const reset = "\x1b[0m";
+
 // Function to ask GithubAPI for user activity
 async function FetchActivity(username) {
-    console.log(`Fetching user activity for user ${username}`)
+    console.log(
+        `${blue}Fetching user activity for user${green} ${username}${reset}`,
+    );
     const response = await fetch(
-        `https://api.github.com/users/${username}/events`
+        `https://api.github.com/users/${username}/events`,
     );
     if (!response.ok) {
         switch (response.status) {
             case 404:
-                throw new Error(`Error: 404. User is not found.`) // Could be from ratelimit rarely.
+                throw new Error(`${red}Error: 404.${reset} User is not found.`); // Could be from ratelimit rarely.
             case 403:
-                throw new Error(`Error: 403. Permission denied. Possible rate limit.`)
+                throw new Error(
+                    `${red}Error: 403.${reset} Permission denied. Possible rate limit.`,
+                );
             case 503:
-                throw new Error(`Error: 503. GithubAPI is down.`) // Could also be server issue
+                throw new Error(`${red}Error: 503.${reset} GithubAPI is down.`); // Could also be server issue
             case 504:
-                throw new Error(`Error: 504. Request timed out.`)
+                throw new Error(`${red}Error: 504.${reset} Request timed out.`);
             default:
-                throw new Error(`Error: ${response.status}.`)
+                throw new Error(`${red}Error:${reset} ${response.status}.`);
         }
     }
     return response.json();
-};
+}
 
 // Function to print user activity to console
 function PrintActivity(response) {
-    if (response.length == 0) { // Special case so it doesn't return blank
-        console.log("No recent activity found.")
-        return
-    };
-    
-    response.forEach((event) =>{ // GO through the JSON and return info for each response
+    if (response.length == 0) {
+        // Special case so it doesn't return blank
+        console.log("${red}Error:${reset} No recent activity found.");
+        return;
+    }
+
+    response.forEach((event) => {
+        // GO through the JSON and return info for each response
         let eventInfo; // Used to transmit data to the premade event script
         // Will add actual specific event date later hopefully. Probably not.
-        /* switch (event.type) {
+        switch (event.type) {
             case "CreateEvent":
-                let eventInfo = `${username} created a ${event.payload.ref_type} called/in`
-        };*/
-        eventInfo = `${event.type} in ${event.repo.name}` // Default case. Not in because lazy.
-        console.log(`- Event at ${event.created_at.substring(0,10)} ${event.created_at.substring(12,19)} UTC -\n${eventInfo}` ) // Premade event script
+                if (event.payload.ref_type == "branch") {
+                    eventInfo = `${red + username + reset} created a ${event.payload.ref_type} in ${event.repo.name};`;
+                } else {
+                    eventInfo = `${red + username + reset} created a ${event.payload.ref_type} called ${event.repo.name}`;
+                }
+                break;
+            case "DeleteEvent":
+                if (event.payload.ref_type == "branch") {
+                    eventInfo = `${red + username + reset} deleted a ${event.payload.ref_type} in ${event.repo.name}`;
+                } else {
+                    eventInfo = `${red + username + reset} deleted a ${event.payload.ref_type} called ${event.repo.name}`;
+                }
+                break;
+            case "ForkEvent":
+                eventInfo = `$${red + username + reset} forked ${event.repo.name}`;
+                break;
+            case "MemberEvent":
+                eventInfo = `$${red + username + reset} added ${event.payload.member.login} to ${event.repo.name}`;
+                break;
+            case "PublicEvent":
+                eventInfo = `${red + username + reset} made ${event.repo.name} public`;
+                break;
+            case "PullRequestEvent":
+                eventInfo = `${red + username + reset} opened a pull request in ${event.repo.name}`;
+                break;
+            case "PushEvent":
+                eventInfo = `${red + username + reset} pushed changes to ${event.repo.name}`;
+                break;
+            case "ReleseEvent":
+                eventInfo = `${red + username + reset} released ${event.payload.release.tag_name} in ${event.repo.name}`;
+                break;
+            case "WatchEvent":
+                eventInfo = `${red + username + reset} starred ${event.repo.name}`;
+                break;
+            default:
+                eventInfo = `${red + username + reset} had a ${event.type} in ${event.repo.name}`;
+                break;
+        }
+        console.log(
+            `${yellow}- Event at ${reset}${event.created_at.substring(0, 10)} ${event.created_at.substring(12, 19)} ${yellow}UTC -${reset}\n${eventInfo}`,
+        ); // Premade event script
     });
 }
 
-const username = process.argv[2] // Returns username provided in initial command
+const username = process.argv[2]; // Returns username provided in initial command
 if (!username) {
-    console.error(`No Username Provided!`)
+    console.error(`${red}Error:${reset} No Username Provided!`);
     process.exit(`1`); // Catch null case or whatever its called
 } else {
     FetchActivity(username)
@@ -53,4 +103,4 @@ if (!username) {
             console.error(err.message);
             process.exit(1);
         });
-};
+}
